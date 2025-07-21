@@ -15,10 +15,15 @@ model, _, preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrai
 model = model.to(device).eval()
 
 # Load data
-EMBEDDINGS_PATH = "data/embeddings.npy"
-LABELS_PATH = "data/labels.csv"
-embeddings = np.load(EMBEDDINGS_PATH)
-labels_df = pd.read_csv(LABELS_PATH)
+DATA_PATH = "data/art_data.npz"
+data = np.load(DATA_PATH, allow_pickle=True)
+
+embeddings = data["embeddings"].astype(np.float32)
+labels_df = pd.DataFrame({
+    "filename": data["filenames"],
+    "artist_name": data["artist_names"],
+    "genre": data["genres"]
+})
 
 # Inference function
 def embed_uploaded_image(image: Image.Image) -> np.ndarray:

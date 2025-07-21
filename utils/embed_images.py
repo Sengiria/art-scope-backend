@@ -53,3 +53,13 @@ pd.DataFrame(valid_rows).to_csv(LABELS_PATH, index=False)
 
 print(f"Saved embeddings to: {EMBEDDINGS_PATH}")
 print(f"Saved labels to: {LABELS_PATH}")
+
+# Save compressed .npz bundle
+valid_df = pd.DataFrame(valid_rows)
+np.savez_compressed("data/art_data.npz",
+    embeddings=np.array(all_embeddings, dtype=np.float32),
+    filenames=valid_df["filename"].values,
+    artist_names=valid_df["artist_name"].values,
+    genres=valid_df["genre"].values,
+)
+print("Saved compressed bundle to data/art_data.npz")
