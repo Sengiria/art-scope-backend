@@ -14,16 +14,24 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 model, _, preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k')
 model = model.to(device).eval()
 
-# Load data
-DATA_PATH = "data/art_data.npz"
-data = np.load(DATA_PATH, allow_pickle=True)
+# Lazy global cache
+data_cache = None
 
-embeddings = data["embeddings"].astype(np.float32)
-labels_df = pd.DataFrame({
-    "filename": data["filenames"],
-    "artist_name": data["artist_names"],
-    "genre": data["genres"]
-})
+def load_data():
+    global data_cache
+    if data_cache is None:
+        print("Loading embeddings and labels...")
+        data = np.load("data/art_data.npz", allow_pickle=True)
+
+        embeddings = data["embeddings"].astype(np.float32)
+        labels_df = pd.DataFrame({
+            "filename": data["filenames"],
+            "artist_name": data["artist_names"],
+            "genre": data["genres"]
+        })
+
+        data_cache = (embeddings, labels_df)
+    return data_cache
 
 # Inference function
 def embed_uploaded_image(image: Image.Image) -> np.ndarray:
@@ -48,11 +56,10 @@ def embed_uploaded_image(image: Image.Image) -> np.ndarray:
     return output
 
 def find_top_matches(uploaded_vector: np.ndarray, top_k: int = 5) -> List[dict]:
+    embeddings, labels_df = load_data()
     sims = cosine_similarity([uploaded_vector], embeddings)[0]
 
-    # Clean up the similarity scores
     sims = np.nan_to_num(sims, nan=0.0, posinf=0.0, neginf=0.0)
-
     top_indices = sims.argsort()[-top_k:][::-1]
 
     results = []
