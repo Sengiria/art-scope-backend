@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from PIL import Image
 import io
-from .inference import embed_uploaded_image, find_top_matches
+from .inference import embed_uploaded_image, find_top_matches, load_data
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import ORJSONResponse
 import asyncio
@@ -19,6 +19,13 @@ app.add_middleware(
 )
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+@app.on_event("startup")
+async def preload():
+    load_data()
+    # Warm up the model
+    dummy = Image.new("RGB", (224, 224))
+    _ = embed_uploaded_image(dummy)
 
 @app.get("/ping")
 def ping():

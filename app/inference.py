@@ -27,7 +27,6 @@ def load_data():
         labels_df = pd.DataFrame({
             "filename": data["filenames"],
             "artist_name": data["artist_names"],
-            "genre": data["genres"]
         })
 
         data_cache = (embeddings, labels_df)
@@ -71,7 +70,6 @@ def find_top_matches(uploaded_vector: np.ndarray, top_k: int = 5) -> List[dict]:
         result = {
             "filename": os.path.basename(labels_df.iloc[i]["filename"]),
             "artist_name": str(labels_df.iloc[i].get("artist_name", "unknown")),
-            "genre": str(labels_df.iloc[i].get("genre", "Unknown")),
             "score": round(score, 4),
         }
         results.append(result)

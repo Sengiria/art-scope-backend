@@ -5,11 +5,10 @@ __pycache__/
 venv/
 .env
 
-# FastAPI + data
-data/
-*.npy
-*.csv
-*.log
+# Keep only the final compressed data file
+!data/art_data.npz
+data/*
+!data/.gitkeep
 
 # OS
 .DS_Store
